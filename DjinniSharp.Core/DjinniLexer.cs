@@ -7,6 +7,8 @@ namespace DjinniSharp.Core
 {
     internal class DjinniLexer : Lexer<char, DjinniLexTokenKind>
     {
+        protected override int GetLengthOfInput(char input) => 1;
+
         bool isInQuotedString = false;
 
         protected override void OnTokenProduced(LexToken<char, DjinniLexTokenKind> token)

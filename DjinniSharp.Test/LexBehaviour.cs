@@ -56,11 +56,13 @@ namespace DjinniSharp.Test
 
         class ALexer : Lexer<char, ATokenKind>
         {
+            protected override int GetLengthOfInput(char input) => 1;
             protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[] { new SingleCharLexPattern('a', ATokenKind.A) };
         }
         class ABLexer : Lexer<char, ATokenKind>
         {
+            protected override int GetLengthOfInput(char input) => 1;
             protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[]
                 {
@@ -70,6 +72,7 @@ namespace DjinniSharp.Test
         }
         class MultiALexer : Lexer<char, ATokenKind>
         {
+            protected override int GetLengthOfInput(char input) => 1;
             protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[] { new MultiCharLexPattern('a', ATokenKind.A) };
         }

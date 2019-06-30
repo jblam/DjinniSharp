@@ -9,7 +9,7 @@ namespace DjinniSharp.Core.Lexing
         protected abstract IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> GetAllPatterns();
         protected virtual TTokenKind ErrorKind => default;
         protected virtual IEqualityComparer<TTokenKind> EqualityComparer { get; } = EqualityComparer<TTokenKind>.Default;
-        protected virtual int GetLengthOfInput(TInput input) => 1;
+        protected abstract int GetLengthOfInput(TInput input);
 
         static IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> TryConsumeAll(IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> availablePatterns, TInput c)
         {
