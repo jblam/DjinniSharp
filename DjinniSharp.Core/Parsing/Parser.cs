@@ -1,6 +1,7 @@
 ﻿using DjinniSharp.Core.Lexing;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace DjinniSharp.Core.Parsing
@@ -9,15 +10,40 @@ namespace DjinniSharp.Core.Parsing
 
     class Parser : Lexer<Token, ProductionKind>
     {
+        protected override void OnTokenProduced(LexToken<Token, ProductionKind> token)
+        {
+            if (token.Kind == ProductionKind.OpenBlock)
+                isInBlock = true;
+            else if (token.Kind == ProductionKind.CloseBlock)
+                isInBlock = false;
+        }
+
         protected override int GetLengthOfInput(Token input) => input.Length;
 
-        protected override IReadOnlyCollection<ILexPattern<Token, ProductionKind>> GetAllPatterns() =>
-            new ILexPattern<Token, ProductionKind>[]
-            {
-                new NullProduction(),
-                new Directive(),
-                // new Comment(),
-            };
+        protected override IReadOnlyCollection<ILexPattern<Token, ProductionKind>> GetAllPatterns()
+        {
+            if (isInBlock)
+                return new ILexPattern<Token, ProductionKind>[]
+                {
+                    new NullProduction(),
+                    new Directive(),
+                    new Comment(),
+                    new MemberDeclaration(),
+                    new SingleOperatorDeclaration(DjinniLexTokenKind.OpenBracket, "{", ProductionKind.OpenBlock),
+                    new SingleOperatorDeclaration(DjinniLexTokenKind.CloseBracket, "}", ProductionKind.CloseBlock)
+                };
+            else
+                return new ILexPattern<Token, ProductionKind>[]
+                {
+                    new NullProduction(),
+                    new Directive(),
+                    new Comment(),
+                    new TypeDeclaration(),
+                    new SingleOperatorDeclaration(DjinniLexTokenKind.OpenBracket, "{", ProductionKind.OpenBlock),
+                    new SingleOperatorDeclaration(DjinniLexTokenKind.CloseBracket, "}", ProductionKind.CloseBlock)
+                };
+        }
+        bool isInBlock = false;
     }
 
     enum ProductionKind
@@ -26,127 +52,9 @@ namespace DjinniSharp.Core.Parsing
         Null,
         Directive,
         Comment,
-    }
-    class NullProduction : ILexPattern<Token, ProductionKind>
-    {
-        public ProductionKind Kind => ProductionKind.Null;
-
-        public bool TryConsume(Token input)
-        {
-            return input.Kind == DjinniLexTokenKind.Whitespace || input.Kind == DjinniLexTokenKind.Newline;
-        }
-    }
-
-    class Directive : ILexPattern<Token, ProductionKind>
-    {
-        public ProductionKind Kind => ProductionKind.Directive;
-
-        Token? directiveOperator;
-        Token? directiveIdentifier;
-        List<Token> contents;
-
-        public bool TryConsume(Token token)
-        {
-            if (token.Kind == DjinniLexTokenKind.Newline)
-                return false;
-            if (directiveIdentifier.HasValue)
-            {
-                contents.Add(token);
-                return true;
-            }
-            else if (directiveOperator.HasValue)
-            {
-                if (token.Kind == DjinniLexTokenKind.Word)
-                {
-                    directiveIdentifier = token;
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            else if (token.Kind == DjinniLexTokenKind.Operator)
-            {
-                // TODO: ensure it's the *right* operator
-                directiveOperator = token;
-                contents = new List<Token>();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    class Comment : ILexPattern<Token, ProductionKind>
-    {
-        public ProductionKind Kind => ProductionKind.Comment;
-
-        Token? commentOperator;
-        List<Token> contents;
-
-        public bool TryConsume(Token input)
-        {
-            if (input.Kind == DjinniLexTokenKind.Newline)
-                return false;
-            else if (commentOperator.HasValue)
-            {
-                contents.Add(input);
-                return true;
-            }
-            else if (input.Kind == DjinniLexTokenKind.Operator)
-            {
-                // TODO: ensure it's the *right* operator
-                commentOperator = input;
-                contents = new List<Token>();
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-    }
-
-    struct ParseToken
-    {
-        int Offset { get; }
-        LexToken<char, DjinniLexTokenKind> Token { get; }
-    }
-
-    class Production
-    {
-        int Position { get; }
-        class Directive : Production
-        {
-            ParseToken DirectiveOperator { get; }
-            ParseToken DirectiveIdentifier { get; }
-            ParseToken ArgumentToken { get; }
-        }
-        class Comment : Production
-        {
-            ParseToken CommentOperator { get; }
-            IReadOnlyCollection<ParseToken> Content { get; }
-        }
-        class TypeDeclaration : Production
-        {
-            ParseToken NameIdentifier { get; }
-            ParseToken AssignmentOperator { get; }
-            ParseToken Keyword { get; }
-            IReadOnlyCollection<(ParseToken, ParseToken)> ExposureOperators { get; }
-        }
-        class MemberDeclaration : Production
-        {
-            IReadOnlyCollection<ParseToken> ModifierKeywords { get; }
-            ParseToken MemberIdentifier { get; }
-        }
-        class MethodArguments : Production
-        {
-            ParseToken OpenBracket { get; }
-            IReadOnlyCollection<(ParseToken Identifier, ParseToken Colon, ParseToken Type)> Arguments { get; }
-            ParseToken CloseBracket { get; }
-        }
+        TypeDeclaration,
+        MemberDeclaration,
+        OpenBlock,
+        CloseBlock,
     }
 }
