@@ -24,12 +24,15 @@ namespace DjinniSharp.Core.Lexing
             return livePatterns;
         }
 
+        protected virtual void OnTokenProduced(LexToken<TInput, TTokenKind> token) { }
+
         public IEnumerable<LexToken<TInput, TTokenKind>> Consume(IEnumerable<TInput> input)
         {
             int unreadableLength = 0;
             List<TInput> unconsumable = new List<TInput>();
             foreach (var token in ConsumeImpl())
             {
+                OnTokenProduced(token);
                 if (EqualityComparer.Equals(token.Kind, ErrorKind))
                 {
                     unreadableLength += token.Length;

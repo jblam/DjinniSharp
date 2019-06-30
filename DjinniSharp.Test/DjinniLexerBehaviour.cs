@@ -55,6 +55,10 @@ namespace DjinniSharp.Test
                 AsToken(":", Operator),
                 AsToken("z", Word),
                 AsToken(";", Operator)),
+            TestCase("\"}\"",
+                Quote, AsToken("}", Word), Quote),
+            TestCase("\"}\r\n",
+                Quote, AsToken("}", Word), CrLf),
         };
 
         static readonly DjinniLexer sut = new DjinniLexer();

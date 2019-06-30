@@ -7,14 +7,34 @@ namespace DjinniSharp.Core
 {
     internal class DjinniLexer : Lexer<char, DjinniLexTokenKind>
     {
-        protected override IReadOnlyCollection<ILexPattern<char, DjinniLexTokenKind>> GetAllPatterns() =>
-            new ILexPattern<char, DjinniLexTokenKind>[]
-            {
-                new WhitespaceLexer(),
-                new NewlineLexer(),
-                new WordLexer(),
-                new OperatorLexer(),
-                new BracketLexer(),
-            };
+        bool isInQuotedString = false;
+
+        protected override void OnTokenProduced(LexToken<char, DjinniLexTokenKind> token)
+        {
+            if (token.IsOperatorOf("\""))
+                isInQuotedString = !isInQuotedString;
+            if (token.Kind == DjinniLexTokenKind.Newline)
+                isInQuotedString = false;
+        }
+
+        protected override IReadOnlyCollection<ILexPattern<char, DjinniLexTokenKind>> GetAllPatterns()
+        {
+            if (isInQuotedString)
+                return new ILexPattern<char, DjinniLexTokenKind>[]
+                {
+                    new StringLiteralContentLexer(),
+                    new OnlyStringQuoteLexer(),
+                    new NewlineLexer(),
+                };
+            else
+                return new ILexPattern<char, DjinniLexTokenKind>[]
+                {
+                    new WhitespaceLexer(),
+                    new NewlineLexer(),
+                    new WordLexer(),
+                    new OperatorLexer(),
+                    new BracketLexer(),
+                };
+        }
     }
 }
