@@ -2,7 +2,7 @@
 
 namespace DjinniSharp.Core
 {
-    internal class BracketLexer : ILexPattern<DjinniLexTokenKind>
+    internal class BracketLexer : ILexPattern<char, DjinniLexTokenKind>
     {
         public DjinniLexTokenKind Kind { get; private set; } = default;
 

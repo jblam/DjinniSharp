@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DjinniSharp.Core.Lexing
 {
-    class WordLexer : ILexPattern<DjinniLexTokenKind>
+    class WordLexer : ILexPattern<char, DjinniLexTokenKind>
     {
         public DjinniLexTokenKind Kind => DjinniLexTokenKind.Word;
 

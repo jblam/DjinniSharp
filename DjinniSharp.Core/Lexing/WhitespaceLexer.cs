@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DjinniSharp.Core.Lexing
 {
-    class WhitespaceLexer : ILexPattern<DjinniLexTokenKind>
+    class WhitespaceLexer : ILexPattern<char, DjinniLexTokenKind>
     {
         public DjinniLexTokenKind Kind => DjinniLexTokenKind.Whitespace;
 

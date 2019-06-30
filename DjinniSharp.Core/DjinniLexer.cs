@@ -5,10 +5,10 @@ using System.Text;
 
 namespace DjinniSharp.Core
 {
-    internal class DjinniLexer : Lexer<DjinniLexTokenKind>
+    internal class DjinniLexer : Lexer<char, DjinniLexTokenKind>
     {
-        protected override IReadOnlyCollection<ILexPattern<DjinniLexTokenKind>> GetAllPatterns() =>
-            new ILexPattern<DjinniLexTokenKind>[]
+        protected override IReadOnlyCollection<ILexPattern<char, DjinniLexTokenKind>> GetAllPatterns() =>
+            new ILexPattern<char, DjinniLexTokenKind>[]
             {
                 new WhitespaceLexer(),
                 new NewlineLexer(),

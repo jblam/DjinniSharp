@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DjinniSharp.Core.Lexing
 {
-    class NewlineLexer : ILexPattern<DjinniLexTokenKind>
+    class NewlineLexer : ILexPattern<char, DjinniLexTokenKind>
     {
         public DjinniLexTokenKind Kind => DjinniLexTokenKind.Newline;
 

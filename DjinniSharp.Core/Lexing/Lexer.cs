@@ -4,15 +4,15 @@ using System.Linq;
 
 namespace DjinniSharp.Core.Lexing
 {
-    public abstract class Lexer<TTokenKind>
+    public abstract class Lexer<TInput, TTokenKind>
     {
-        protected abstract IReadOnlyCollection<ILexPattern<TTokenKind>> GetAllPatterns();
+        protected abstract IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> GetAllPatterns();
         protected virtual TTokenKind ErrorKind => default;
         protected virtual IEqualityComparer<TTokenKind> EqualityComparer { get; } = EqualityComparer<TTokenKind>.Default;
 
-        static IReadOnlyCollection<ILexPattern<TTokenKind>> TryConsumeAll(IReadOnlyCollection<ILexPattern<TTokenKind>> availablePatterns, char c)
+        static IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> TryConsumeAll(IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> availablePatterns, TInput c)
         {
-            var livePatterns = new List<ILexPattern<TTokenKind>>();
+            var livePatterns = new List<ILexPattern<TInput, TTokenKind>>();
             foreach (var pattern in availablePatterns)
             {
                 if (pattern.TryConsume(c))
@@ -23,7 +23,7 @@ namespace DjinniSharp.Core.Lexing
             return livePatterns;
         }
 
-        public IEnumerable<LexToken<TTokenKind>> Consume(IEnumerable<char> input)
+        public IEnumerable<LexToken<TTokenKind>> Consume(IEnumerable<TInput> input)
         {
             int unreadableLength = 0;
             foreach (var token in ConsumeImpl())
@@ -48,7 +48,7 @@ namespace DjinniSharp.Core.Lexing
             {
                 int tokenStartPosition = 0;
                 int currentLexPosition = 0;
-                IReadOnlyCollection<ILexPattern<TTokenKind>> availablePatterns = GetAllPatterns();
+                IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> availablePatterns = GetAllPatterns();
                 foreach (var c in input)
                 {
                     int existingTokenConsumedSize = currentLexPosition - tokenStartPosition;
@@ -92,7 +92,7 @@ namespace DjinniSharp.Core.Lexing
             }
         }
 
-        LexToken<TTokenKind> ConstructToken(int length, IEnumerable<ILexPattern<TTokenKind>> candidatePatterns)
+        LexToken<TTokenKind> ConstructToken(int length, IEnumerable<ILexPattern<TInput, TTokenKind>> candidatePatterns)
         {
             if (length == 0)
                 throw new ArgumentException("Attempted to construct a zero-length token");

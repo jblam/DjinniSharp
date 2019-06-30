@@ -1,8 +1,8 @@
 ﻿namespace DjinniSharp.Core.Lexing
 {
-    public interface ILexPattern<TKind>
+    public interface ILexPattern<TInput, TKind>
     {
-        bool TryConsume(char c);
+        bool TryConsume(TInput input);
         TKind Kind { get; }
     }
 }

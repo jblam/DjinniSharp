@@ -4,7 +4,7 @@ using System.Text;
 
 namespace DjinniSharp.Core.Lexing
 {
-    class OperatorLexer : ILexPattern<DjinniLexTokenKind>
+    class OperatorLexer : ILexPattern<char, DjinniLexTokenKind>
     {
         public DjinniLexTokenKind Kind => DjinniLexTokenKind.Operator;
 
@@ -24,6 +24,7 @@ namespace DjinniSharp.Core.Lexing
                     case ':':
                         // type-defining
                     case ';':
+                    case ',':
                         // sequence
                     case '"':
                         // string literal delimter

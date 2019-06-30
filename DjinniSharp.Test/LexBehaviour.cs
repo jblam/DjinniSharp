@@ -15,7 +15,7 @@ namespace DjinniSharp.Test
             A,
             B
         }
-        class SingleCharLexPattern : ILexPattern<ATokenKind>
+        class SingleCharLexPattern : ILexPattern<char, ATokenKind>
         {
             public SingleCharLexPattern(char expected, ATokenKind kind)
             {
@@ -36,7 +36,7 @@ namespace DjinniSharp.Test
                 return firstChar == expected;
             }
         }
-        class MultiCharLexPattern : ILexPattern<ATokenKind>
+        class MultiCharLexPattern : ILexPattern<char, ATokenKind>
         {
             public MultiCharLexPattern(char expected, ATokenKind kind)
             {
@@ -49,23 +49,23 @@ namespace DjinniSharp.Test
             public bool TryConsume(char c) => c == expected;
         }
 
-        class ALexer : Lexer<ATokenKind>
+        class ALexer : Lexer<char, ATokenKind>
         {
-            protected override IReadOnlyCollection<ILexPattern<ATokenKind>> GetAllPatterns() =>
+            protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[] { new SingleCharLexPattern('a', ATokenKind.A) };
         }
-        class ABLexer : Lexer<ATokenKind>
+        class ABLexer : Lexer<char, ATokenKind>
         {
-            protected override IReadOnlyCollection<ILexPattern<ATokenKind>> GetAllPatterns() =>
+            protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[]
                 {
                     new SingleCharLexPattern('a', ATokenKind.A),
                     new SingleCharLexPattern('b', ATokenKind.B)
                 };
         }
-        class MultiALexer : Lexer<ATokenKind>
+        class MultiALexer : Lexer<char, ATokenKind>
         {
-            protected override IReadOnlyCollection<ILexPattern<ATokenKind>> GetAllPatterns() =>
+            protected override IReadOnlyCollection<ILexPattern<char, ATokenKind>> GetAllPatterns() =>
                 new[] { new MultiCharLexPattern('a', ATokenKind.A) };
         }
 
