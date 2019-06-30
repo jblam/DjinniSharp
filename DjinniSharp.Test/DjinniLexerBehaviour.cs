@@ -8,62 +8,53 @@ using System.Text;
 
 namespace DjinniSharp.Test
 {
-    using Token = LexToken<DjinniLexTokenKind>;
+    using Token = LexToken<char, DjinniLexTokenKind>;
     using static DjinniLexTokenKind;
 
     [TestFixture]
     public class DjinniLexerBehaviour
     {
-        static TestCaseData TestCase(string input, params LexToken<DjinniLexTokenKind>[] expectedOutput) =>
+        static TestCaseData TestCase(string input, params Token[] expectedOutput) =>
             new TestCaseData(input)
             {
                 ExpectedResult = expectedOutput
             };
 
+        static Token AsToken(string content, DjinniLexTokenKind kind) =>
+            new Token(content.ToCharArray(), kind);
+
+        static readonly Token
+            Space = AsToken(" ", Whitespace),
+            CrLf = AsToken("\r\n", Newline),
+            Equal = AsToken("=", Operator),
+            Quote = AsToken("\"", Operator),
+            Asdf = AsToken("asdf", Word);
+
         public static IEnumerable<TestCaseData> TestCases => new[]
         {
-            TestCase("asdf", new Token(4, Word)),
-            TestCase("    asdf", new Token(4, Whitespace), new Token(4, Word)),
-            TestCase("asdf asdf", new Token(4, Word), new Token(1, Whitespace), new Token(4, Word)),
-            TestCase("asdf=asdf", new Token(4, Word), new Token(1, Operator), new Token(4, Word)),
-            TestCase("asdf = asdf",
-                new Token(4, Word),
-                new Token(1, Whitespace),
-                new Token(1, Operator),
-                new Token(1, Whitespace),
-                new Token(4, Word)),
+            TestCase("asdf", Asdf),
+            TestCase("    asdf", AsToken("    ", Whitespace), Asdf),
+            TestCase("asdf asdf", Asdf, Space, Asdf),
+            TestCase("asdf=asdf", Asdf, Equal, Asdf),
+            TestCase("asdf = asdf", Asdf, Space, Equal, Space, Asdf),
             TestCase("const c = \"value\";",
-                // `const c`
-                new Token(5, Word),
-                new Token(1, Whitespace),
-                new Token(1, Word),
-                // ` = `
-                new Token(1, Whitespace),
-                new Token(1, Operator),
-                new Token(1, Whitespace),
-                // `"value";
-                new Token(1, Operator),
-                new Token(5, Word),
-                new Token(1, Operator),
-                new Token(1, Operator)),
+                AsToken("const", Word), Space, AsToken("c", Word),
+                Space, Equal, Space,
+                Quote, AsToken("value", Word), Quote, AsToken(";", Operator)),
             TestCase("interface\r\n{\r\n}", 
-                new Token(9, Word), 
-                new Token(2, Newline), 
-                new Token(1, OpenBracket),
-                new Token(2, Newline), 
-                new Token(1, CloseBracket)),
-            TestCase("\r\n\r\n", new Token(2, Newline), new Token(2, Newline)),
-            TestCase("\n\n", new Token(1, Newline), new Token(1, Newline)),
+                AsToken("interface", Word), CrLf, AsToken("{", OpenBracket), CrLf, AsToken("}", CloseBracket)),
+            TestCase("\r\n\r\n", CrLf, CrLf),
+            TestCase("\n\n", AsToken("\n", Newline), AsToken("\n", Newline)),
             TestCase("a(x:y):z;",
-                new Token(1, Word),
-                new Token(1, OpenBracket),
-                new Token(1, Word),
-                new Token(1, Operator),
-                new Token(1, Word),
-                new Token(1, CloseBracket),
-                new Token(1, Operator),
-                new Token(1, Word),
-                new Token(1, Operator)),
+                AsToken("a", Word),
+                AsToken("(", OpenBracket),
+                AsToken("x", Word),
+                AsToken(":", Operator),
+                AsToken("y", Word),
+                AsToken(")", CloseBracket),
+                AsToken(":", Operator),
+                AsToken("z", Word),
+                AsToken(";", Operator)),
         };
 
         static readonly DjinniLexer sut = new DjinniLexer();

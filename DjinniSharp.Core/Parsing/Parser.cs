@@ -5,10 +5,12 @@ using System.Text;
 
 namespace DjinniSharp.Core.Parsing
 {
-    using Token = LexToken<DjinniLexTokenKind>;
+    using Token = LexToken<char, DjinniLexTokenKind>;
 
     class Parser : Lexer<Token, ProductionKind>
     {
+        protected override int GetLengthOfInput(Token input) => input.Length;
+
         protected override IReadOnlyCollection<ILexPattern<Token, ProductionKind>> GetAllPatterns() =>
             new ILexPattern<Token, ProductionKind>[]
             {
@@ -111,7 +113,7 @@ namespace DjinniSharp.Core.Parsing
     struct ParseToken
     {
         int Offset { get; }
-        LexToken<DjinniLexTokenKind> Token { get; }
+        LexToken<char, DjinniLexTokenKind> Token { get; }
     }
 
     class Production

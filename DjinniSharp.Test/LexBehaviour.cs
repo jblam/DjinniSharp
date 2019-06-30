@@ -15,6 +15,11 @@ namespace DjinniSharp.Test
             A,
             B
         }
+
+        static LexToken<char, TKind> AsToken<TKind>(string content, TKind kind) =>
+            new LexToken<char, TKind>(content.ToCharArray(), kind);
+
+
         class SingleCharLexPattern : ILexPattern<char, ATokenKind>
         {
             public SingleCharLexPattern(char expected, ATokenKind kind)
@@ -74,7 +79,7 @@ namespace DjinniSharp.Test
         {
             var lexer = new ALexer();
             var output = lexer.Consume("a");
-            CollectionAssert.AreEqual(new[] { new LexToken<ATokenKind>(1, ATokenKind.A) }, output);
+            CollectionAssert.AreEqual(new[] { AsToken("a", ATokenKind.A) }, output);
         }
 
         [Test]
@@ -82,7 +87,7 @@ namespace DjinniSharp.Test
         {
             var lexer = new ALexer();
             var output = lexer.Consume("aa");
-            CollectionAssert.AreEqual(Enumerable.Repeat(new LexToken<ATokenKind>(1, ATokenKind.A), 2), output);
+            CollectionAssert.AreEqual(Enumerable.Repeat(AsToken("a", ATokenKind.A), 2), output);
         }
 
         [Test]
@@ -91,7 +96,7 @@ namespace DjinniSharp.Test
             var lexer = new ABLexer();
             var output = lexer.Consume("aba");
             CollectionAssert.AreEqual(
-                new[] { ATokenKind.A, ATokenKind.B, ATokenKind.A }.Select(t => new LexToken<ATokenKind>(1, t)),
+                new[] { AsToken("a", ATokenKind.A), AsToken("b", ATokenKind.B), AsToken("a", ATokenKind.A) },
                 output);
         }
 
@@ -101,7 +106,7 @@ namespace DjinniSharp.Test
             var lexer = new ALexer();
             var output = lexer.Consume("axa");
             CollectionAssert.AreEqual(
-                new[] { ATokenKind.A, ATokenKind.Unrecognised, ATokenKind.A }.Select(t => new LexToken<ATokenKind>(1, t)),
+                new[] { AsToken("a", ATokenKind.A), AsToken("x", ATokenKind.Unrecognised), AsToken("a", ATokenKind.A) },
                 output);
         }
 
@@ -113,9 +118,9 @@ namespace DjinniSharp.Test
             CollectionAssert.AreEqual(
                 new[]
                 {
-                    new LexToken<ATokenKind>(1, ATokenKind.A),
-                    new LexToken<ATokenKind>(2, ATokenKind.Unrecognised),
-                    new LexToken<ATokenKind>(1, ATokenKind.A)
+                    AsToken("a", ATokenKind.A),
+                    AsToken("xx", ATokenKind.Unrecognised),
+                    AsToken("a", ATokenKind.A)
                 },
                 output);
         }
@@ -128,8 +133,8 @@ namespace DjinniSharp.Test
             CollectionAssert.AreEqual(
                 new[]
                 {
-                    new LexToken<ATokenKind>(1, ATokenKind.Unrecognised),
-                    new LexToken<ATokenKind>(1, ATokenKind.A)
+                    AsToken("x", ATokenKind.Unrecognised),
+                    AsToken("a", ATokenKind.A)
                 },
                 output);
         }
@@ -142,9 +147,9 @@ namespace DjinniSharp.Test
             CollectionAssert.AreEqual(
                 new[]
                 {
-                    new LexToken<ATokenKind>(2, ATokenKind.A),
-                    new LexToken<ATokenKind>(1, ATokenKind.Unrecognised),
-                    new LexToken<ATokenKind>(1, ATokenKind.A)
+                    AsToken("aa", ATokenKind.A),
+                    AsToken("x", ATokenKind.Unrecognised),
+                    AsToken("a", ATokenKind.A)
                 },
                 output);
         }

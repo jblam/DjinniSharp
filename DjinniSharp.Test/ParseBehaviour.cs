@@ -6,8 +6,8 @@ using System.Text;
 
 namespace DjinniSharp.Test
 {
-    using LexToken = LexToken<DjinniLexTokenKind>;
-    using ParseToken = LexToken<Core.Parsing.ProductionKind>;
+    using LexToken = LexToken<char, DjinniLexTokenKind>;
+    using ParseToken = LexToken<LexToken<char, DjinniLexTokenKind>, Core.Parsing.ProductionKind>;
     using static DjinniLexTokenKind;
     using DjinniSharp.Core.Parsing;
     using System.Linq;
@@ -20,12 +20,17 @@ namespace DjinniSharp.Test
             {
                 ExpectedResult = output
             };
-        static LexToken Lex(DjinniLexTokenKind kind) => new LexToken(0, kind);
+        static LexToken Lex(string input, DjinniLexTokenKind kind) => new LexToken(input.ToCharArray(), kind);
         public static IEnumerable<TestCaseData> GetTestCases() => new[]
         {
             TestCase(
-                new[]{ Lex(Operator), Lex(Word), Lex(Whitespace), Lex(Word), Lex(Newline) },
-                new[]{ new ParseToken(4, ProductionKind.Directive), new ParseToken(1, ProductionKind.Null) }),
+                new[]{ Lex("@", Operator), Lex("a", Word), Lex(" ", Whitespace), Lex("b", Word), Lex("\n", Newline) },
+                new[]
+                {
+                    new ParseToken(
+                        new[]{ Lex("@", Operator), Lex("a", Word), Lex(" ", Whitespace), Lex("b", Word) }, ProductionKind.Directive),
+                    new ParseToken(
+                        new[]{ Lex("\n", Newline) }, ProductionKind.Null) }),
         };
 
         [Test, TestCaseSource(nameof(GetTestCases))]

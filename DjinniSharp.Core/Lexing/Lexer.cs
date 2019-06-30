@@ -9,6 +9,7 @@ namespace DjinniSharp.Core.Lexing
         protected abstract IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> GetAllPatterns();
         protected virtual TTokenKind ErrorKind => default;
         protected virtual IEqualityComparer<TTokenKind> EqualityComparer { get; } = EqualityComparer<TTokenKind>.Default;
+        protected virtual int GetLengthOfInput(TInput input) => 1;
 
         static IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> TryConsumeAll(IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> availablePatterns, TInput c)
         {
@@ -23,32 +24,36 @@ namespace DjinniSharp.Core.Lexing
             return livePatterns;
         }
 
-        public IEnumerable<LexToken<TTokenKind>> Consume(IEnumerable<TInput> input)
+        public IEnumerable<LexToken<TInput, TTokenKind>> Consume(IEnumerable<TInput> input)
         {
             int unreadableLength = 0;
+            List<TInput> unconsumable = new List<TInput>();
             foreach (var token in ConsumeImpl())
             {
                 if (EqualityComparer.Equals(token.Kind, ErrorKind))
                 {
                     unreadableLength += token.Length;
+                    unconsumable.AddRange(token.Contents);
                 }
                 else
                 {
                     if (unreadableLength != 0)
-                        yield return new LexToken<TTokenKind>(unreadableLength, ErrorKind);
+                        yield return new LexToken<TInput, TTokenKind>(unconsumable, ErrorKind);
+                    unconsumable = new List<TInput>();
                     unreadableLength = 0;
                     yield return token;
                 }
             }
             if (unreadableLength != 0)
-                yield return new LexToken<TTokenKind>(unreadableLength, ErrorKind);
+                yield return new LexToken<TInput, TTokenKind>(unconsumable, ErrorKind);
 
 
-            IEnumerable<LexToken<TTokenKind>> ConsumeImpl()
+            IEnumerable<LexToken<TInput, TTokenKind>> ConsumeImpl()
             {
                 int tokenStartPosition = 0;
                 int currentLexPosition = 0;
                 IReadOnlyCollection<ILexPattern<TInput, TTokenKind>> availablePatterns = GetAllPatterns();
+                List<TInput> tokenContents = new List<TInput>();
                 foreach (var c in input)
                 {
                     int existingTokenConsumedSize = currentLexPosition - tokenStartPosition;
@@ -58,9 +63,10 @@ namespace DjinniSharp.Core.Lexing
                     if (!livePatterns.Any())
                     {
                         if (existingTokenConsumedSize > 0)
-                            yield return ConstructToken(existingTokenConsumedSize, availablePatterns);
+                            yield return ConstructToken(tokenContents, availablePatterns);
 
                         // reset, and attempt to consume the token again
+                        tokenContents = new List<TInput>();
                         availablePatterns = TryConsumeAll(GetAllPatterns(), c);
                         if (availablePatterns.Any())
                         {
@@ -71,8 +77,8 @@ namespace DjinniSharp.Core.Lexing
                         {
                             // `c` is not readable; yield a one-char unreadable token, and
                             // start the next token at the next char
-                            yield return new LexToken<TTokenKind>(1, ErrorKind);
-                            tokenStartPosition = currentLexPosition + 1;
+                            yield return new LexToken<TInput, TTokenKind>(new[] { c }, ErrorKind);
+                            tokenStartPosition = currentLexPosition + GetLengthOfInput(c);
                         }
                     }
                     else
@@ -81,24 +87,25 @@ namespace DjinniSharp.Core.Lexing
                         availablePatterns = livePatterns;
                     }
 
-                    currentLexPosition += 1;
+                    currentLexPosition += GetLengthOfInput(c);
+                    tokenContents.Add(c);
                 }
 
                 if (tokenStartPosition != currentLexPosition)
                 {
                     // yield final token
-                    yield return ConstructToken(currentLexPosition - tokenStartPosition, availablePatterns);
+                    yield return ConstructToken(tokenContents, availablePatterns);
                 }
             }
         }
 
-        LexToken<TTokenKind> ConstructToken(int length, IEnumerable<ILexPattern<TInput, TTokenKind>> candidatePatterns)
+        LexToken<TInput, TTokenKind> ConstructToken(IReadOnlyCollection<TInput> contents, IEnumerable<ILexPattern<TInput, TTokenKind>> candidatePatterns)
         {
-            if (length == 0)
+            if (contents.Count == 0)
                 throw new ArgumentException("Attempted to construct a zero-length token");
             if (!candidatePatterns.TryGetSingle(out var pattern))
-                return new LexToken<TTokenKind>(length, ErrorKind);
-            return new LexToken<TTokenKind>(length, pattern.Kind);
+                return new LexToken<TInput, TTokenKind>(contents, ErrorKind);
+            return new LexToken<TInput, TTokenKind>(contents, pattern.Kind);
         }
     }
 
