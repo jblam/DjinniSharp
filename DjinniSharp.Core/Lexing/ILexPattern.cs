@@ -1,4 +1,4 @@
-﻿namespace DjinniSharp.Core
+﻿namespace DjinniSharp.Core.Lexing
 {
     public interface ILexPattern<TKind>
     {

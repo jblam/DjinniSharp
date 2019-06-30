@@ -1,4 +1,4 @@
-﻿using DjinniSharp.Core;
+﻿using DjinniSharp.Core.Lexing;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;

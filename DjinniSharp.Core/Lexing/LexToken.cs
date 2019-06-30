@@ -1,4 +1,4 @@
-﻿namespace DjinniSharp.Core
+﻿namespace DjinniSharp.Core.Lexing
 {
     public struct LexToken<TKind>
     {

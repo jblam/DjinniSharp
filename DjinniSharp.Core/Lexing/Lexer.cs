@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DjinniSharp.Core
+namespace DjinniSharp.Core.Lexing
 {
     public abstract class Lexer<TTokenKind>
     {
